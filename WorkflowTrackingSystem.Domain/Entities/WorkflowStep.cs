@@ -26,7 +26,7 @@ namespace WorkflowTrackingSystem.Domain.Entities
         public string ActionType { get; set; } = string.Empty;
 
         [MaxLength(250)]
-        public string? NextStep { get; set; }
+        public string NextStep { get; set; } = string.Empty;
 
 
         [ForeignKey("Workflow")]
