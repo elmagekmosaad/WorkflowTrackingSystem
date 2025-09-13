@@ -1,13 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using WorkflowTrackingSystem.Domain.Entities;
 
-namespace WorkflowTrackingSystem.Infrastructure.Data
+namespace WorkflowTrackingSystem.Infrastructure.Contexts
 {
 
     public class AppDbContext : DbContext
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
-
+     
         public DbSet<Workflow> Workflows { get; set; }
         public DbSet<WorkflowStep> WorkflowSteps { get; set; }
 
@@ -19,7 +19,10 @@ namespace WorkflowTrackingSystem.Infrastructure.Data
             modelBuilder.Entity<Workflow>(entity =>
             {
                 entity.HasKey(e => e.Id);
-                entity.HasIndex(e => e.Name);
+                entity.HasMany(e => e.Steps)
+                      .WithOne(s => s.Workflow)
+                      .HasForeignKey(s => s.WorkflowId)
+                      .OnDelete(DeleteBehavior.Cascade);
             });
             #endregion
 
