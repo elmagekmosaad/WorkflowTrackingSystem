@@ -1,3 +1,6 @@
+﻿using Asp.Versioning;
+using Microsoft.OpenApi.Models;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -5,7 +8,32 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+
+#region swagger
+builder.Services.AddSwaggerGen(s => s.SwaggerDoc("v1", new OpenApiInfo()
+{
+    Title = "Workflow Tracking System Api",
+    Version = "v1",
+    Description = "task interview - Workflow Tracking System Api" +
+                              " for Nano Health Suite company",
+    Contact = new OpenApiContact()
+    {
+        Name = "Mosaad Ghanem",
+        Email = "mosaadghanem97@gmail.com",
+        Url = new("https://www.linkedin.com/in/elmagekmosaad/")
+    },
+}));
+#endregion
+
+#region api versioning
+// Configure Api versioning
+builder.Services.AddApiVersioning(options =>
+{
+    options.DefaultApiVersion = new ApiVersion(1, 0); // Default Api version
+    options.AssumeDefaultVersionWhenUnspecified = true; // Assume default when version is not specified
+    options.ReportApiVersions = true; // Adds headers for supported versions
+});
+#endregion
 
 var app = builder.Build();
 
