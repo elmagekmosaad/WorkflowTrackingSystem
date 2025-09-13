@@ -1,4 +1,5 @@
 ﻿using Asp.Versioning;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using WorkflowTrackingSystem.Application.Services.Implementations;
 using WorkflowTrackingSystem.Application.Services.Interfaces;
@@ -12,6 +13,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
+
+#region db context
+builder.Services.AddDbContext<WorkflowTrackingSystem.Infrastructure.Data.AppDbContext>(options =>
+{
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+});
+#endregion
 
 #region swagger
 builder.Services.AddSwaggerGen(s => s.SwaggerDoc("v1", new OpenApiInfo()
