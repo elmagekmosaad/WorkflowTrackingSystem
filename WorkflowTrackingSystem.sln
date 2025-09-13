@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36408.4
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkflowTrackingSystem.Api", "WorkflowTrackingSystem.Api\WorkflowTrackingSystem.Api.csproj", "{BE11EAF5-AA2B-49F2-A523-C5A44DE2D1DD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BE11EAF5-AA2B-49F2-A523-C5A44DE2D1DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BE11EAF5-AA2B-49F2-A523-C5A44DE2D1DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BE11EAF5-AA2B-49F2-A523-C5A44DE2D1DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BE11EAF5-AA2B-49F2-A523-C5A44DE2D1DD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {92C8084E-5187-4B28-80FF-80AFCA880B55}
+	EndGlobalSection
+EndGlobal
