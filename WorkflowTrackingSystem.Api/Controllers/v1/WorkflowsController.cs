@@ -1,7 +1,6 @@
 ﻿using Asp.Versioning;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using System.Data;
 using WorkflowTrackingSystem.Api.Requests;
 using WorkflowTrackingSystem.Application.DTOs;
 using WorkflowTrackingSystem.Application.Services.Interfaces;
@@ -26,15 +25,15 @@ namespace WorkflowTrackingSystem.Api.Controllers.v1
 
 
         [HttpGet]
-        [ProducesResponseType(typeof(BaseResponse<IEnumerable<WorkflowDto>>), 200)]
+        [ProducesResponseType(typeof(BaseResponse<PaginatedList<WorkflowDto>>), 200)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<IEnumerable<WorkflowDto>>> GetAll()
+        public async Task<ActionResult<BaseResponse<PaginatedList<WorkflowDto>>>> GetAll([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
             try
             {
-                _logger.LogInformation("Fetching all workflows");
+                _logger.LogInformation("Fetching all workflows with pagination. Page: {PageNumber}, Size: {PageSize}", pageNumber, pageSize);
 
-                BaseResponse<IEnumerable<WorkflowDto>> result = await _workflowService.GetAllWorkflowsAsync();
+                var result = await _workflowService.GetAllWorkflowsAsync(pageNumber, pageSize);
 
                 return Ok(result);
             }
@@ -95,7 +94,7 @@ namespace WorkflowTrackingSystem.Api.Controllers.v1
 
                 var workflowId = await _workflowService.CreateWorkflowAsync(workflowDto);
                 _logger.LogInformation("Workflow created successfully with ID: {WorkflowId}", workflowId);
-                return CreatedAtAction(nameof(GetById), new { id = workflowId });
+                return CreatedAtAction(nameof(GetById), new { id = workflowId },null);
             }
             catch (Exception ex)
             {
@@ -131,7 +130,7 @@ namespace WorkflowTrackingSystem.Api.Controllers.v1
 
                 var workflowDto = _mapper.Map<WorkflowDto>(request);
                 _logger.LogDebug("Mapped CreateWorkflowRequest to CreateWorkflowDto: {@WorkflowDto}", workflowDto);
-
+                
                 var result = await _workflowService.UpdateWorkflowAsync(id, workflowDto);
                 _logger.LogInformation("Updated workflow with name: {WorkflowName}", request.Name);
 

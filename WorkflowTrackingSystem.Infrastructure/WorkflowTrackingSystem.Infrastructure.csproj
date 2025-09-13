@@ -32,6 +32,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\WorkflowTrackingSystem.Domain\WorkflowTrackingSystem.Domain.csproj" />
+    <ProjectReference Include="..\WorkflowTrackingSystem.Shared\WorkflowTrackingSystem.Shared.csproj" />
   </ItemGroup>
 
 </Project>
