@@ -1,5 +1,9 @@
 ﻿using Asp.Versioning;
 using Microsoft.OpenApi.Models;
+using WorkflowTrackingSystem.Application.Services.Implementations;
+using WorkflowTrackingSystem.Application.Services.Interfaces;
+using WorkflowTrackingSystem.Domain.Repositories;
+using WorkflowTrackingSystem.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,6 +38,16 @@ builder.Services.AddApiVersioning(options =>
     options.ReportApiVersions = true; // Adds headers for supported versions
 });
 #endregion
+
+#region dependency injections
+#region services
+builder.Services.AddScoped<IWorkflowService, WorkflowService>();
+#endregion
+#region repositories
+builder.Services.AddScoped<IWorkflowRepository, WorkflowRepository>();
+#endregion
+#endregion
+
 
 var app = builder.Build();
 
