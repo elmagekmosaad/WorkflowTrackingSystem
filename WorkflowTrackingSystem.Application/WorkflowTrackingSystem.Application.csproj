@@ -5,9 +5,13 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-
+	<ItemGroup>
+		<PackageReference Include="AutoMapper" Version="14.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.9" />
+	</ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\WorkflowTrackingSystem.Domain\WorkflowTrackingSystem.Domain.csproj" />
+    <ProjectReference Include="..\WorkflowTrackingSystem.Shared\WorkflowTrackingSystem.Shared.csproj" />
   </ItemGroup>
 
 </Project>
