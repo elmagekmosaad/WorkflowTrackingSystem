@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using WorkflowTrackingSystem.Domain.Entities;
 using WorkflowTrackingSystem.Domain.Repositories;
-using WorkflowTrackingSystem.Infrastructure.Data;
+using WorkflowTrackingSystem.Infrastructure.Contexts;
 
 namespace WorkflowTrackingSystem.Infrastructure.Repositories
 {

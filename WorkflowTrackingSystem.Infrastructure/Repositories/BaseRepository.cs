@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using WorkflowTrackingSystem.Domain.Entities;
 using WorkflowTrackingSystem.Domain.Repositories;
-using WorkflowTrackingSystem.Infrastructure.Data;
+using WorkflowTrackingSystem.Infrastructure.Contexts;
 
 namespace WorkflowTrackingSystem.Infrastructure.Repositories
 {
@@ -27,24 +27,29 @@ namespace WorkflowTrackingSystem.Infrastructure.Repositories
             return entity;
         }
 
-        public T Update(T entity)
+        public async Task<T> UpdateAsync(T entity)
         {
             _context.Set<T>().Update(entity);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return entity;
         }
 
-        public void Delete(T entity)
+        public async Task<T> DeleteAsync(Guid id)
         {
-            _context.Set<T>().Remove(entity);
-            _context.SaveChanges();
+            var entity = await _context.Set<T>().FindAsync(id);
+            if (entity != null)
+            {
+                _context.Set<T>().Remove(entity);
+                await _context.SaveChangesAsync();
+            }
+            return entity;
         }
 
         public async Task<IEnumerable<T>> GetAllAsync()
         {
             return await _context.Set<T>().ToListAsync();
         }
-      
+
         public async Task<T> GetByIdAsync(Guid id)
         {
             return await _context.Set<T>().FindAsync(id);
@@ -71,5 +76,7 @@ namespace WorkflowTrackingSystem.Infrastructure.Repositories
 
             return await query.Where(criteria).ToListAsync();
         }
+
+
     }
 }
