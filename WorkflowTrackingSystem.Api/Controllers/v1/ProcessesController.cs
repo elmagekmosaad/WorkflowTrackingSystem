@@ -24,6 +24,51 @@ namespace WorkflowTrackingSystem.Api.Controllers.v1
             _logger = logger;
         }
 
+        [HttpGet]
+        [ProducesResponseType(typeof(BaseResponse<PaginatedList<ProcessDto>>), 200)]
+        [ProducesResponseType(400)]
+        public async Task<ActionResult<BaseResponse<PaginatedList<ProcessDto>>>> GetAll([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] Guid? workflowId = null, [FromQuery] ProcessStatus? status = null, [FromQuery] string? assignedTo = null)
+        {
+            try
+            {
+                _logger.LogInformation("Fetching processes with filters - PageNumber: {PageNumber}, PageSize: {PageSize}, WorkflowId: {WorkflowId}, Status: {Status}, AssignedTo: {AssignedTo}", pageNumber, pageSize, workflowId, status, assignedTo);
+
+                var result = await _processService.GetAllProcesssAsync(pageNumber, pageSize, workflowId, status, assignedTo);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching processs");
+                return BadRequest(BaseResponse<object>.Fail("Internal server error"));
+            }
+        }
+
+        [HttpGet("{id}")]
+        [ProducesResponseType(typeof(BaseResponse<ProcessDto>), 200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> GetById(Guid id)
+        {
+            try
+            {
+                _logger.LogInformation("Fetching process with ID: {ProcessId}", id);
+                var process = await _processService.GetProcessByIdAsync(id);
+                if (process == null)
+                {
+                    _logger.LogWarning("Process with ID: {ProcessId} not found.", id);
+                    return NotFound();
+                }
+                _logger.LogInformation("Process with ID: {ProcessId} retrieved successfully.", id);
+                return Ok(process);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching process with ID: {ProcessId}", id);
+                return BadRequest(BaseResponse<object>.Fail("Error updating process"));
+            }
+        }
+
+
         [HttpPost("start")]
         [ProducesResponseType(typeof(BaseResponse<ProcessDto>), 200)]
         [ProducesResponseType(400)]
@@ -116,49 +161,7 @@ namespace WorkflowTrackingSystem.Api.Controllers.v1
             }
         }
 
-        [HttpGet]
-        [ProducesResponseType(typeof(BaseResponse<PaginatedList<ProcessDto>>), 200)]
-        [ProducesResponseType(400)]
-        public async Task<ActionResult<BaseResponse<PaginatedList<ProcessDto>>>> GetAll([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] Guid? workflowId = null, [FromQuery] ProcessStatus? status = null, [FromQuery] string? assignedTo = null)
-        {
-            try
-            {
-                _logger.LogInformation("Fetching processes with filters - PageNumber: {PageNumber}, PageSize: {PageSize}, WorkflowId: {WorkflowId}, Status: {Status}, AssignedTo: {AssignedTo}", pageNumber, pageSize, workflowId, status, assignedTo);
-                
-                var result = await _processService.GetAllProcesssAsync(pageNumber, pageSize, workflowId, status, assignedTo);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error fetching processs");
-                return BadRequest(BaseResponse<object>.Fail("Internal server error"));
-            }
-        }
-
-        [HttpGet("{id}")]
-        [ProducesResponseType(typeof(BaseResponse<ProcessDto>), 200)]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(404)]
-        public async Task<IActionResult> GetById(Guid id)
-        {
-            try
-            {
-                _logger.LogInformation("Fetching process with ID: {ProcessId}", id);
-                var process = await _processService.GetProcessByIdAsync(id);
-                if (process == null)
-                {
-                    _logger.LogWarning("Process with ID: {ProcessId} not found.", id);
-                    return NotFound();
-                }
-                _logger.LogInformation("Process with ID: {ProcessId} retrieved successfully.", id);
-                return Ok(process);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error fetching process with ID: {ProcessId}", id);
-                return BadRequest(BaseResponse<object>.Fail("Error updating process"));
-            }
-        }
+       
 
     }
 }
