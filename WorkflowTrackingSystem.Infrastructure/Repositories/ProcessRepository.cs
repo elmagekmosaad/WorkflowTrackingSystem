@@ -3,10 +3,9 @@ using WorkflowTrackingSystem.Domain.Entities;
 using WorkflowTrackingSystem.Domain.Enums;
 using WorkflowTrackingSystem.Domain.Repositories;
 using WorkflowTrackingSystem.Infrastructure.Contexts;
-using WorkflowTrackingSystem.Infrastructure.Repositories;
 using WorkflowTrackingSystem.Shared;
 
-namespace ProcessTrackingSystem.Infrastructure.Repositories
+namespace WorkflowTrackingSystem.Infrastructure.Repositories
 {
     public class ProcessRepository : BaseRepository<Process>, IProcessRepository
     {
@@ -14,15 +13,35 @@ namespace ProcessTrackingSystem.Infrastructure.Repositories
         {
         }
 
-        public async Task<PaginatedList<Process>> GetPagedAsync(int pageNumber, int pageSize, Guid? workflowId = null, ProcessStatus? status = null, string? assignedTo = null)
+        public async Task<PaginatedList<Process>> GetPagedAsync(
+    int pageNumber,
+    int pageSize,
+    Guid? workflowId = null,
+    ProcessStatus? status = null,
+    string? assignedTo = null)
         {
-            var query = _context.Processes.Include(w => w.ProcessSteps).AsQueryable();
+            var query = _context.Processes.AsNoTracking().AsQueryable();
+
+            if (workflowId.HasValue)
+                query = query.Where(p => p.WorkflowId == workflowId.Value);
+
+            if (status.HasValue)
+                query = query.Where(p => p.Status == status.Value);
+
+            if (!string.IsNullOrEmpty(assignedTo))
+                query = query.Where(p => p.Initiator == assignedTo);
+
             var totalCount = await query.CountAsync();
+
             var items = await query
+                .OrderByDescending(p => p.CreatedAt)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
+                .Include(p => p.ProcessSteps)
                 .ToListAsync();
+
             return new PaginatedList<Process>(items, totalCount, pageNumber, pageSize);
         }
+
     }
 }

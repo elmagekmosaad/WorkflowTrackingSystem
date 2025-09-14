@@ -1,14 +1,14 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Logging;
-using ProcessTrackingSystem.Application.Services.Interfaces;
 using WorkflowTrackingSystem.Application.DTOs.Process;
+using WorkflowTrackingSystem.Application.Services.Interfaces;
 using WorkflowTrackingSystem.Domain.Entities;
 using WorkflowTrackingSystem.Domain.Enums;
 using WorkflowTrackingSystem.Domain.Repositories;
 using WorkflowTrackingSystem.Shared;
 
 
-namespace ProcessTrackingSystem.Application.Services.Implementations
+namespace WorkflowTrackingSystem.Application.Services.Implementations
 {
     public class ProcessService : BaseService, IProcessService
     {
@@ -16,13 +16,15 @@ namespace ProcessTrackingSystem.Application.Services.Implementations
         private readonly IMapper _mapper;
         private readonly ILogger<ProcessService> _logger;
         private readonly IWorkflowRepository _workflowRepository;
+        private readonly IValidationService _validationService;
 
-        public ProcessService(IProcessRepository processRepository, IMapper mapper, ILogger<ProcessService> logger, IWorkflowRepository workflowRepository)
+        public ProcessService(IProcessRepository processRepository, IMapper mapper, ILogger<ProcessService> logger, IWorkflowRepository workflowRepository, IValidationService validationService)
         {
             _processRepository = processRepository;
             _mapper = mapper;
             _logger = logger;
             _workflowRepository = workflowRepository;
+            _validationService = validationService;
         }
 
         public async Task<BaseResponse<ProcessDto>> StartProcessAsync(ProcessDto processDto)
@@ -39,7 +41,7 @@ namespace ProcessTrackingSystem.Application.Services.Implementations
             {
                 var firstStep = workflow.Steps.OrderBy(s => s.Order).FirstOrDefault();
                 if (firstStep == null)
-                    {
+                {
                     _logger.LogWarning("No steps defined in the workflow for WorkflowId: {WorkflowId}", processDto.WorkflowId);
                     return BaseResponse<ProcessDto>.Fail("No steps defined in the workflow", new List<string> { "Workflow has no steps defined" });
                 }
@@ -51,14 +53,14 @@ namespace ProcessTrackingSystem.Application.Services.Implementations
                     Status = ProcessStatus.Active
                 };
                 if (firstStep != null)
-                { 
+                {
                     process.ProcessSteps.Add(new ProcessStep
-                     {
-                         ProcessId = process.Id,
-                         WorkflowStepId = firstStep.Id,
-                         StepName = firstStep.StepName,
-                         Status = ProcessStepStatus.Pending,
-                     });
+                    {
+                        ProcessId = process.Id,
+                        WorkflowStepId = firstStep.Id,
+                        StepName = firstStep.StepName,
+                        Status = ProcessStepStatus.Pending,
+                    });
                 }
                 var createdProcess = await _processRepository.AddAsync(process);
                 var createdProcessDto = _mapper.Map<ProcessDto>(createdProcess);
@@ -79,43 +81,84 @@ namespace ProcessTrackingSystem.Application.Services.Implementations
             _logger.LogInformation("Executing step '{StepName}' for ProcessId: {ProcessId} by PerformedBy: {PerformedBy}", executeStepDto.StepName, executeStepDto.ProcessId, executeStepDto.PerformedBy);
             try
             {
-                //var process = await _processRepository.FindAsync(x => x.Id == dto.ProcessId, new[] { "ProcessSteps", "ProcessSteps.WorkflowStep", "Workflow.Steps" });
                 var process = await _processRepository.FindAsync(x => x.Id == executeStepDto.ProcessId, includes: new[] { "ProcessSteps", "Workflow.Steps" });
                 if (process == null)
                 {
                     _logger.LogWarning("Process not found for ProcessId: {ProcessId}", executeStepDto.ProcessId);
                     return BaseResponse<ProcessDto>.Fail("Process not found", new List<string> { "Process not found" });
                 }
-                var currentStep = process.ProcessSteps.FirstOrDefault(ps => ps.StepName == executeStepDto.StepName && ps.Status == ProcessStepStatus.Pending);
+                var currentStep = process.ProcessSteps
+                    .FirstOrDefault(ps => ps.StepName == executeStepDto.StepName && ps.Status == ProcessStepStatus.Pending);
                 if (currentStep == null)
                 {
                     _logger.LogWarning("Current step '{StepName}' not found or already completed for ProcessId: {ProcessId}", executeStepDto.StepName, executeStepDto.ProcessId);
                     return BaseResponse<ProcessDto>.Fail("Current step not found or already completed", new List<string> { "Current step not found or already completed" });
                 }
-                currentStep.Status = ProcessStepStatus.Completed;
+
+                var workflowStep = process.Workflow.Steps.FirstOrDefault(ws => ws.StepName == currentStep.StepName && ws.Order == process.Workflow.Steps.OrderBy(s => s.Order).FirstOrDefault(s => s.StepName == currentStep.StepName)?.Order);
+                if (workflowStep == null)
+                {
+                    _logger.LogWarning("Workflow step definition not found for step '{StepName}'", currentStep.StepName);
+                    return BaseResponse<ProcessDto>.Fail("Workflow step definition not found", new List<string> { "Workflow step definition not found" });
+                }
+                if (!string.Equals(workflowStep.AssignedTo, executeStepDto.PerformedBy, StringComparison.OrdinalIgnoreCase))
+                {
+                    _logger.LogWarning("User '{PerformedBy}' is not allowed to perform step '{StepName}'", executeStepDto.PerformedBy, executeStepDto.StepName);
+                    return BaseResponse<ProcessDto>.Fail("User is not allowed to perform this step", new List<string> { "User is not allowed to perform this step" });
+                }
+                if (!string.Equals(workflowStep.ActionType, executeStepDto.Action, StringComparison.OrdinalIgnoreCase))
+                {
+                    _logger.LogWarning("Action '{Action}' does not match required action type '{ActionType}' for step '{StepName}'", executeStepDto.Action, workflowStep.ActionType, executeStepDto.StepName);
+                    return BaseResponse<ProcessDto>.Fail("Action does not match required action type", new List<string> { "Action does not match required action type" });
+                }
+                if (workflowStep.RequiresValidation)
+                {
+                    var (isValid, message) = await _validationService.ValidateStepAsync(currentStep.StepName, executeStepDto.Action);
+                    if (!isValid)
+                    {
+                        currentStep.Status = ProcessStepStatus.ValidationFailed;
+                        currentStep.ValidationResult = message;
+                        process.UpdatedAt = DateTime.UtcNow;
+                        await _processRepository.UpdateAsync(process);
+                        _logger.LogWarning("Validation failed for step '{StepName}' in ProcessId: {ProcessId}", currentStep.StepName, process.Id);
+                        return BaseResponse<ProcessDto>.Fail("Validation failed", new List<string> { message ?? "Validation failed" });
+                    }
+                }
+                currentStep.Status = executeStepDto.Action.ToLower() == "reject" ? ProcessStepStatus.Rejected : ProcessStepStatus.Completed;
                 currentStep.PerformedBy = executeStepDto.PerformedBy;
                 currentStep.PerformedAt = DateTime.UtcNow;
                 currentStep.Action = executeStepDto.Action;
                 currentStep.Comments = executeStepDto.Comments;
-                var nextWorkflowStep = process.Workflow.Steps
-                    .Where(s => s.Order > process.Workflow.Steps.First(ws => ws.StepName == currentStep.StepName).Order)
-                    .OrderBy(s => s.Order)
-                    .FirstOrDefault();
-                if (nextWorkflowStep != null)
+                if (executeStepDto.Action.ToLower() == "reject")
                 {
-                    process.CurrentStep = nextWorkflowStep.StepName;
-                    process.ProcessSteps.Add(new ProcessStep
-                    {
-                        ProcessId = process.Id,
-                        WorkflowStepId = nextWorkflowStep.Id,
-                        StepName = nextWorkflowStep.StepName,
-                        Status = ProcessStepStatus.Pending,
-                    });
+                    process.Status = ProcessStatus.Rejected;
                 }
                 else
                 {
-                    process.CurrentStep = null;
-                    process.Status = ProcessStatus.Completed;
+                    var nextStepName = currentStep.WorkflowStep.NextStep;
+                    if (nextStepName == "Completed" || string.IsNullOrEmpty(nextStepName))
+                    {
+                        process.CurrentStep = "Completed";
+                        process.Status = ProcessStatus.Completed;
+                    }
+                    else
+                    {
+                        var nextWorkflowStep = process.Workflow.Steps
+                       .Where(s => s.Order > workflowStep.Order)
+                       .OrderBy(s => s.Order)
+                       .FirstOrDefault();
+                        if (nextWorkflowStep != null)
+                        {
+                            process.CurrentStep = nextWorkflowStep.StepName;
+                            process.ProcessSteps.Add(new ProcessStep
+                            {
+                                ProcessId = process.Id,
+                                WorkflowStepId = nextWorkflowStep.Id,
+                                StepName = nextWorkflowStep.StepName,
+                                Status = ProcessStepStatus.Pending,
+                            });
+                        }
+                    }
                 }
                 process.UpdatedAt = DateTime.UtcNow;
                 await _processRepository.UpdateAsync(process);
@@ -138,7 +181,7 @@ namespace ProcessTrackingSystem.Application.Services.Implementations
             {
                 _logger.LogInformation("Fetch all processs with pagination. Page: {PageNumber}, Size: {PageSize}", pageNumber, pageSize);
 
-                var pagedResult = await _processRepository.GetPagedAsync(pageNumber, pageSize);
+                var pagedResult = await _processRepository.GetPagedAsync(pageNumber, pageSize, workflowId, status, assignedTo);
                 var processsDto = _mapper.Map<IEnumerable<ProcessDto>>(pagedResult.Items);
                 var paginatedList = new PaginatedList<ProcessDto>(processsDto, pagedResult.TotalCount, pageNumber, pageSize);
                 return BaseResponse<PaginatedList<ProcessDto>>.Success(paginatedList, "Processs retrieved successfully");
@@ -173,6 +216,11 @@ namespace ProcessTrackingSystem.Application.Services.Implementations
             }
         }
 
-      
+        private async Task<bool> SimulateFinanceApiValidationAsync(Process process, ProcessStep step)
+        {
+            await Task.Delay(100); // Simulate network delay
+            // Always return true for simulation, you can add logic here
+            return true;
+        }
     }
 }

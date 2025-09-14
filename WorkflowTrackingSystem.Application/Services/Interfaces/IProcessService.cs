@@ -2,7 +2,7 @@
 using WorkflowTrackingSystem.Domain.Enums;
 using WorkflowTrackingSystem.Shared;
 
-namespace ProcessTrackingSystem.Application.Services.Interfaces
+namespace WorkflowTrackingSystem.Application.Services.Interfaces
 {
     public interface IProcessService
     {

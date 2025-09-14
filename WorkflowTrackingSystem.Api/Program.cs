@@ -2,9 +2,6 @@
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
-using ProcessTrackingSystem.Application.Services.Implementations;
-using ProcessTrackingSystem.Application.Services.Interfaces;
-using ProcessTrackingSystem.Infrastructure.Repositories;
 using Serilog;
 using WorkflowTrackingSystem.Api.Mapping;
 using WorkflowTrackingSystem.Application.Services.Implementations;
