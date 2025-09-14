@@ -10,6 +10,9 @@ namespace WorkflowTrackingSystem.Infrastructure.Contexts
      
         public DbSet<Workflow> Workflows { get; set; }
         public DbSet<WorkflowStep> WorkflowSteps { get; set; }
+        public DbSet<Process> Processes { get; set; }
+        public DbSet<ProcessStep> ProcessSteps { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
