@@ -16,13 +16,15 @@ namespace WorkflowTrackingSystem.Application.Services.Implementations
         private readonly IMapper _mapper;
         private readonly ILogger<ProcessService> _logger;
         private readonly IWorkflowRepository _workflowRepository;
+        private readonly IValidationService _validationService;
 
-        public ProcessService(IProcessRepository processRepository, IMapper mapper, ILogger<ProcessService> logger, IWorkflowRepository workflowRepository)
+        public ProcessService(IProcessRepository processRepository, IMapper mapper, ILogger<ProcessService> logger, IWorkflowRepository workflowRepository, IValidationService validationService)
         {
             _processRepository = processRepository;
             _mapper = mapper;
             _logger = logger;
             _workflowRepository = workflowRepository;
+            _validationService = validationService;
         }
 
         public async Task<BaseResponse<ProcessDto>> StartProcessAsync(ProcessDto processDto)
@@ -109,14 +111,17 @@ namespace WorkflowTrackingSystem.Application.Services.Implementations
                     _logger.LogWarning("Action '{Action}' does not match required action type '{ActionType}' for step '{StepName}'", executeStepDto.Action, workflowStep.ActionType, executeStepDto.StepName);
                     return BaseResponse<ProcessDto>.Fail("Action does not match required action type", new List<string> { "Action does not match required action type" });
                 }
-                if (string.Equals(workflowStep.StepName, "Finance Approval", StringComparison.OrdinalIgnoreCase))
+                if (workflowStep.RequiresValidation)
                 {
-                    // Simulate external API validation
-                    bool isValid = await SimulateFinanceApiValidationAsync(process, currentStep);
+                    var (isValid, message) = await _validationService.ValidateStepAsync(currentStep.StepName, executeStepDto.Action);
                     if (!isValid)
                     {
-                        _logger.LogWarning("Finance validation failed for process {ProcessId}", process.Id);
-                        return BaseResponse<ProcessDto>.Fail("Finance validation failed", new List<string> { "Finance validation failed" });
+                        currentStep.Status = ProcessStepStatus.ValidationFailed;
+                        currentStep.ValidationResult = message;
+                        process.UpdatedAt = DateTime.UtcNow;
+                        await _processRepository.UpdateAsync(process);
+                        _logger.LogWarning("Validation failed for step '{StepName}' in ProcessId: {ProcessId}", currentStep.StepName, process.Id);
+                        return BaseResponse<ProcessDto>.Fail("Validation failed", new List<string> { message ?? "Validation failed" });
                     }
                 }
                 currentStep.Status = executeStepDto.Action.ToLower() == "reject" ? ProcessStepStatus.Rejected : ProcessStepStatus.Completed;
@@ -124,8 +129,6 @@ namespace WorkflowTrackingSystem.Application.Services.Implementations
                 currentStep.PerformedAt = DateTime.UtcNow;
                 currentStep.Action = executeStepDto.Action;
                 currentStep.Comments = executeStepDto.Comments;
-
-
                 if (executeStepDto.Action.ToLower() == "reject")
                 {
                     process.Status = ProcessStatus.Rejected;
@@ -141,9 +144,9 @@ namespace WorkflowTrackingSystem.Application.Services.Implementations
                     else
                     {
                         var nextWorkflowStep = process.Workflow.Steps
-                   .Where(s => s.Order > workflowStep.Order)
-                   .OrderBy(s => s.Order)
-                   .FirstOrDefault();
+                       .Where(s => s.Order > workflowStep.Order)
+                       .OrderBy(s => s.Order)
+                       .FirstOrDefault();
                         if (nextWorkflowStep != null)
                         {
                             process.CurrentStep = nextWorkflowStep.StepName;
@@ -155,10 +158,8 @@ namespace WorkflowTrackingSystem.Application.Services.Implementations
                                 Status = ProcessStepStatus.Pending,
                             });
                         }
-
                     }
                 }
-
                 process.UpdatedAt = DateTime.UtcNow;
                 await _processRepository.UpdateAsync(process);
                 var processDto = _mapper.Map<ProcessDto>(process);
