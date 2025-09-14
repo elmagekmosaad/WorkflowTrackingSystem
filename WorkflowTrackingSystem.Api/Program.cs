@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using ProcessTrackingSystem.Application.Services.Implementations;
 using ProcessTrackingSystem.Application.Services.Interfaces;
+using ProcessTrackingSystem.Infrastructure.Repositories;
 using Serilog;
 using WorkflowTrackingSystem.Api.Mapping;
 using WorkflowTrackingSystem.Application.Services.Implementations;
@@ -37,7 +38,6 @@ builder.Services.AddSwaggerGen(s => s.SwaggerDoc("v1", new OpenApiInfo()
     },
 }));
 #endregion
-
 #region api versioning
 // Configure Api versioning
 builder.Services.AddApiVersioning(options =>
@@ -59,7 +59,6 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 #endregion
-
 #region dependency injections
 builder.Services.AddAutoMapper(typeof(WorkflowProfile).Assembly);
 
