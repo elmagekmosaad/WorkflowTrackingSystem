@@ -25,93 +25,6 @@ namespace WorkflowTrackingSystem.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("WorkflowTrackingSystem.Domain.Entities.Process", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CurrentStep")
-                        .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("character varying(250)");
-
-                    b.Property<string>("Initiator")
-                        .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("character varying(250)");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("WorkflowId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("WorkflowId");
-
-                    b.ToTable("Processes");
-                });
-
-            modelBuilder.Entity("WorkflowTrackingSystem.Domain.Entities.ProcessStep", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Action")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Comments")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("CompletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("PerformedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("PerformedBy")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("ProcessId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("StepName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("ValidationResult")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("WorkflowStepId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProcessId");
-
-                    b.HasIndex("WorkflowStepId");
-
-                    b.ToTable("ProcessSteps");
-                });
-
             modelBuilder.Entity("WorkflowTrackingSystem.Domain.Entities.Workflow", b =>
                 {
                     b.Property<Guid>("Id")
@@ -178,36 +91,7 @@ namespace WorkflowTrackingSystem.Infrastructure.Migrations
                     b.ToTable("WorkflowSteps");
                 });
 
-            modelBuilder.Entity("WorkflowTrackingSystem.Domain.Entities.Process", b =>
-                {
-                    b.HasOne("WorkflowTrackingSystem.Domain.Entities.Workflow", "Workflow")
-                        .WithMany()
-                        .HasForeignKey("WorkflowId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Workflow");
-                });
-
-            modelBuilder.Entity("WorkflowTrackingSystem.Domain.Entities.ProcessStep", b =>
-                {
-                    b.HasOne("WorkflowTrackingSystem.Domain.Entities.Process", "Process")
-                        .WithMany("ProcessSteps")
-                        .HasForeignKey("ProcessId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("WorkflowTrackingSystem.Domain.Entities.WorkflowStep", "WorkflowStep")
-                        .WithMany()
-                        .HasForeignKey("WorkflowStepId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Process");
-
-                    b.Navigation("WorkflowStep");
-                });
-
+    
             modelBuilder.Entity("WorkflowTrackingSystem.Domain.Entities.WorkflowStep", b =>
                 {
                     b.HasOne("WorkflowTrackingSystem.Domain.Entities.Workflow", "Workflow")
@@ -219,15 +103,6 @@ namespace WorkflowTrackingSystem.Infrastructure.Migrations
                     b.Navigation("Workflow");
                 });
 
-            modelBuilder.Entity("WorkflowTrackingSystem.Domain.Entities.Process", b =>
-                {
-                    b.Navigation("ProcessSteps");
-                });
-
-            modelBuilder.Entity("WorkflowTrackingSystem.Domain.Entities.Workflow", b =>
-                {
-                    b.Navigation("Steps");
-                });
 #pragma warning restore 612, 618
         }
     }
