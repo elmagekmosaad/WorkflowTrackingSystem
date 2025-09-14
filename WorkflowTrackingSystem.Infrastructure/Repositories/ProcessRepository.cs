@@ -3,10 +3,9 @@ using WorkflowTrackingSystem.Domain.Entities;
 using WorkflowTrackingSystem.Domain.Enums;
 using WorkflowTrackingSystem.Domain.Repositories;
 using WorkflowTrackingSystem.Infrastructure.Contexts;
-using WorkflowTrackingSystem.Infrastructure.Repositories;
 using WorkflowTrackingSystem.Shared;
 
-namespace ProcessTrackingSystem.Infrastructure.Repositories
+namespace WorkflowTrackingSystem.Infrastructure.Repositories
 {
     public class ProcessRepository : BaseRepository<Process>, IProcessRepository
     {
