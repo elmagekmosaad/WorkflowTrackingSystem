@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using WorkflowTrackingSystem.Application.DTOs;
+using WorkflowTrackingSystem.Application.DTOs.Workflow;
 using WorkflowTrackingSystem.Domain.Entities;
 using WorkflowTrackingSystem.Shared;
 

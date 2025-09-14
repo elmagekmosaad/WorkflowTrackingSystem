@@ -1,11 +1,16 @@
-﻿namespace WorkflowTrackingSystem.Application.DTOs
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace WorkflowTrackingSystem.Api.Requests.Workflow
 {
-    public class WorkflowStepDto
+    public class CreateWorkflowStepRequest
     {
-        public Guid Id { get; set; }
+        [Required]
         public string StepName { get; set; } = string.Empty;
+        [Required]
         public string AssignedTo { get; set; } = string.Empty;
+        [Required]
         public string ActionType { get; set; } = string.Empty;
+        [Required]
         public string NextStep { get; set; } = string.Empty;
     }
 }

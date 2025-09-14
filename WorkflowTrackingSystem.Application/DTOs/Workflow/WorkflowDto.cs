@@ -1,4 +1,4 @@
-﻿namespace WorkflowTrackingSystem.Application.DTOs
+﻿namespace WorkflowTrackingSystem.Application.DTOs.Workflow
 {
     public class WorkflowDto
     {

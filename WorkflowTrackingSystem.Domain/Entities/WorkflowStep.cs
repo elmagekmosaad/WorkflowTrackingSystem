@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace WorkflowTrackingSystem.Domain.Entities
 {
@@ -29,10 +24,10 @@ namespace WorkflowTrackingSystem.Domain.Entities
         public string NextStep { get; set; } = string.Empty;
 
 
-        [ForeignKey("Workflow")]
+        [ForeignKey(nameof(Workflow))]
         public Guid WorkflowId { get; set; }
         [JsonIgnore]
         public virtual Workflow Workflow { get; set; } = null!;
-      
+        public int Order { get; set; }
     }
 }

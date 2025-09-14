@@ -1,8 +1,8 @@
 ﻿using Asp.Versioning;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using WorkflowTrackingSystem.Api.Requests;
-using WorkflowTrackingSystem.Application.DTOs;
+using WorkflowTrackingSystem.Api.Requests.Workflow;
+using WorkflowTrackingSystem.Application.DTOs.Workflow;
 using WorkflowTrackingSystem.Application.Services.Interfaces;
 using WorkflowTrackingSystem.Shared;
 
@@ -94,7 +94,7 @@ namespace WorkflowTrackingSystem.Api.Controllers.v1
 
                 var workflowId = await _workflowService.CreateWorkflowAsync(workflowDto);
                 _logger.LogInformation("Workflow created successfully with ID: {WorkflowId}", workflowId);
-                return CreatedAtAction(nameof(GetById), new { id = workflowId },null);
+                return CreatedAtAction(nameof(GetById), new { id = workflowId }, null);
             }
             catch (Exception ex)
             {
@@ -130,7 +130,7 @@ namespace WorkflowTrackingSystem.Api.Controllers.v1
 
                 var workflowDto = _mapper.Map<WorkflowDto>(request);
                 _logger.LogDebug("Mapped CreateWorkflowRequest to CreateWorkflowDto: {@WorkflowDto}", workflowDto);
-                
+
                 var result = await _workflowService.UpdateWorkflowAsync(id, workflowDto);
                 _logger.LogInformation("Updated workflow with name: {WorkflowName}", request.Name);
 
