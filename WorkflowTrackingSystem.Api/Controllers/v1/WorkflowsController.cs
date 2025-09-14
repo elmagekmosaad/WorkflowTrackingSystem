@@ -2,7 +2,7 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using WorkflowTrackingSystem.Api.Requests.Workflow;
-using WorkflowTrackingSystem.Application.DTOs;
+using WorkflowTrackingSystem.Application.DTOs.Workflow;
 using WorkflowTrackingSystem.Application.Services.Interfaces;
 using WorkflowTrackingSystem.Shared;
 
