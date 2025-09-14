@@ -33,6 +33,6 @@ namespace WorkflowTrackingSystem.Domain.Entities
         public Guid WorkflowId { get; set; }
         [JsonIgnore]
         public virtual Workflow Workflow { get; set; } = null!;
-      
+        public int Order { get; set; }
     }
 }
