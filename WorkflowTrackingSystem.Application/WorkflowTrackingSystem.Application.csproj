@@ -13,5 +13,8 @@
     <ProjectReference Include="..\WorkflowTrackingSystem.Domain\WorkflowTrackingSystem.Domain.csproj" />
     <ProjectReference Include="..\WorkflowTrackingSystem.Shared\WorkflowTrackingSystem.Shared.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="DTOs\Process\" />
+  </ItemGroup>
 
 </Project>
