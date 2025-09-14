@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using WorkflowTrackingSystem.Api.Requests;
+using WorkflowTrackingSystem.Api.Requests.Workflow;
 using WorkflowTrackingSystem.Application.DTOs;
 using WorkflowTrackingSystem.Domain.Entities;
 
