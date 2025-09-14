@@ -29,5 +29,6 @@ namespace WorkflowTrackingSystem.Domain.Entities
         [JsonIgnore]
         public virtual Workflow Workflow { get; set; } = null!;
         public int Order { get; set; }
+        public bool RequiresValidation { get; set; } = false;
     }
 }
