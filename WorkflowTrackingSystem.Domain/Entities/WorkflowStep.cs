@@ -29,7 +29,7 @@ namespace WorkflowTrackingSystem.Domain.Entities
         public string NextStep { get; set; } = string.Empty;
 
 
-        [ForeignKey("Workflow")]
+        [ForeignKey(nameof(Workflow))]
         public Guid WorkflowId { get; set; }
         [JsonIgnore]
         public virtual Workflow Workflow { get; set; } = null!;
