@@ -2,6 +2,8 @@
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using ProcessTrackingSystem.Application.Services.Implementations;
+using ProcessTrackingSystem.Application.Services.Interfaces;
 using Serilog;
 using WorkflowTrackingSystem.Api.Mapping;
 using WorkflowTrackingSystem.Application.Services.Implementations;
@@ -58,15 +60,16 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 });
 #endregion
 
-
 #region dependency injections
 builder.Services.AddAutoMapper(typeof(WorkflowProfile).Assembly);
 
 #region services
 builder.Services.AddScoped<IWorkflowService, WorkflowService>();
+builder.Services.AddScoped<IProcessService, ProcessService>();
 #endregion
 #region repositories
 builder.Services.AddScoped<IWorkflowRepository, WorkflowRepository>();
+builder.Services.AddScoped<IProcessRepository, ProcessRepository>();
 #endregion
 #endregion
 #region logging
